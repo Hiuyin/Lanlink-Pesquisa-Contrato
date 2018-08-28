@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width-device-width, initial-scale=1">
+	<title>Busca de Contratos</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="CSS/estilo1.css">
+	
+</head>
+<body>
+
+	<!-- Imagem LLK logo -->
+	<a href="index1Busca.ejs">
+        <img src="imagens/lanlink1.png" id="llk_img2">
+    </a>
+	
+
+
+	<!-- Mensagem de exibição -->
+	<p id="msgResult1" >
+		<font size="15" face="arial">
+			<b>Contratos Lanlink</b>
+		</font>
+	</p>
+
+
+
+	<!-- /#top -->
+	<div id="main" class="container-fluid">
+    	<div id="top" class="row">
+ 			<div class="col-md-3">
+ 				<h3></h3>
+    		</div>
+ 
+    		<div class="col-md-6">
+        		<div class="input-group h2">
+					<form action="http://10.85.50.152:3000/enviaPesquisa" method="GET">
+						<input type="text" id="search" name="search" class="form-control form-control-lg" placeholder="Digite o nome do contrato">
+            			<span class="input-group-btn">
+                				<button type="submit" id="envio" class="btn btn-primary my-2"></button>
+                    				<span class="glyphicon glyphicon-search"></span>
+                				</button>
+						   </span>
+					</form>
+        		</div>
+   			 </div>
+		</div> <!-- /#top -->
+
+ 	</div>  <!-- /#main -->
+	
+
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+</body>
+</html>

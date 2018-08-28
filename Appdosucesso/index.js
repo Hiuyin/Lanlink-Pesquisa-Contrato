@@ -3,7 +3,7 @@ const fs = require('fs')
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const hostname = '127.0.0.1';
+const hostname = ['127.0.0.1','10.85.50.152'];
 const Sequelize = require('sequelize');
 const port = 3000;
 const app = express();
@@ -52,27 +52,34 @@ function base64_decode(base64str, file) {
     console.log('******** File created from base64 encoded string ********');
 }
 
-function recebeArraySQL(valor){
-  sequelize.query("SELECT IDContrato, pjo_name, IDDocumento, filename FROM documentoCRM where pjo_name like :search",
+
+function unicoItem (array){
+  return array.filter(function(elem, pos,arr) {
+    return arr.indexOf(elem) == pos;
+  });
+}
+
+function recebeArraySQL(valor,res){
+  sequelize.query("SELECT distinct contrato, IDContrato FROM documentoCRM where contrato like :search",
   { replacements: { search:'%'+valor+'%' }}
   ,{ type: sequelize.QueryTypes.SELECT}
-).then(resultado =>{
-  //console.log(resultado.length);
+).then((resultado) => {
+  const resultados = [[],[]]
   for(var i = 0;i<=resultado.length-1;i++)
   {
-    //console.log(resultado[i].length);
     for(var j=0;j<=resultado[i].length-1;j++)
     {
-      console.log(resultado[i][j].pjo_name);
-      //console.log(resultado[i][0]);
-      //console.log(resultado[i][j]);
+     // console.log(resultado[i][j].pjo_name);
+     resultados[i][j] = {}
+     resultados[i][j].name = resultado[i][j].contrato ;
+     resultados[i][j].id = resultado[i][j].IDContrato ;
     }
   }
 
-  // console.log(resultado[0].length)
-  //  for(let i = 0;i<=resultado[0].lenght;i++){
-  //    //console.log(resultado[i].pjo_name)
-  //  }
+  
+
+  res.render('contratos', { contratos : unicoItem(resultados[0])})
+  
 })
 
 }
@@ -118,14 +125,33 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/enviaPesquisa', (req, res) => {
-  //res.send(getcoisa())
-  recebeArraySQL(req.query.search)
-  
-  
+app.set('views', './views')
+app.set('view engine', 'ejs')
+app.use(express.static('assets'))
+
+app.get('/enviaPesquisa',async (req, res) => {
+
   console.log("joao vito é gordo")
+   //console.log(recebeArraySQL(req.query.search))
+  const teste = await recebeArraySQL(req.query.search, res)
+   //console.log(recuperaValor(req.query.search))
+   console.log(teste)
+   console.log("joao vito é gordo")
+  
+  
+  //res.render('contratos')
+  // console.log("joao vito é gordo")
 
 });
+app.get('/arquivos/:id', (req,res)=> {
+  const id = req.params.id
+
+  
+})
+
+app.get('/', (req, res) => {
+  res.render('index1Busca')
+})
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
