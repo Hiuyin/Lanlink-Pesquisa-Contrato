@@ -17,5 +17,9 @@
       <% } else { %>
         <p>Nenhum contrato foi encontrado!</p>
       <% } %>
+      <form action="/upload/<%= item.idContrato %>/<%= item.idDocumento %>" method="post" enctype="multipart/form-data">
+        <input type="file" name="uploaded" value="upload" multiple>
+        <input type="submit" value="upload">
+      </form>
   </body>
 </html>

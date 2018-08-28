@@ -1,14 +1,14 @@
-const http = require('http');
 const fs = require('fs')
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer')
 const hostname = ['127.0.0.1','10.85.50.152'];
 const Sequelize = require('sequelize');
 const port = 3000;
 const app = express();
-
+const upload = multer();
 const sequelize = new Sequelize('DataSwitch', 'BuscaContrato', '!Q@W#E1q2w3e2018', {
     host: '10.85.1.19',
     dialect: 'mssql',
@@ -45,15 +45,15 @@ const sequelize = new Sequelize('DataSwitch', 'BuscaContrato', '!Q@W#E1q2w3e2018
     return new Buffer(arquivo).toString('base64')
 }
 
-function base64_decodeVisual(base64str, file,res) {
+function base64_decodeVisual(base64str, file,fileType,filename,res) {
     
     var bitmap = new Buffer(base64str, 'base64');
     
     console.log(bitmap)
     console.log(file)
-    res.writeHead(200, {'Content-Type': 'application/pdf'});
+    res.writeHead(200, {'Content-Type': fileType,
+    "Content-Disposition": "attachment;filename=" + filename});
     res.end(bitmap, 'binary');
-   // res.download(file,bitmap)
     console.log('******** File created from base64 encoded string ********');
 }
 
@@ -99,7 +99,7 @@ function recebeArraySQL(valor,res){
 
 
 function downloadDocumento(idcontrato,iddocumento,res){
-  sequelize.query("SELECT filename,documentBody FROM documentoCRM where idcontrato = :search and iddocumento = :searchdoc",
+  sequelize.query("SELECT filename,tipo,documentBody FROM documentoCRM where idcontrato = :search and iddocumento = :searchdoc",
   { replacements: { search: idcontrato, searchdoc: iddocumento }}
   ,{ type: sequelize.QueryTypes.SELECT}
   ).then((doc)=>{
@@ -107,9 +107,8 @@ function downloadDocumento(idcontrato,iddocumento,res){
     let filename = doc[0][0].filename
     let file = doc[0][0].documentBody
     let filelocation = path.join('./download',filename)
-    console.log(filelocation)
-    console.log(filename)
-    base64_decodeVisual(file,filelocation,res)
+    let fileType = doc[0][0].tipo
+    base64_decodeVisual(file,filelocation,fileType,filename,res)
   })
 }
 
@@ -202,9 +201,18 @@ app.get('/download/:idContrato/:idDocumento', (req, res) => {
   const idContrato = req.params.idContrato
   const idDocumento = req.params.idDocumento
   downloadDocumento(idContrato,idDocumento,res)
-
-  
 });
+
+app.post('/upload',upload.array('uploaded',10), (req,res)=>{
+var file = req.files;
+var arquivo = []
+ for(var i = 0; i<= file.length;i++){
+   console.log(file[i])
+   //arquivo[i].filename = file[i].filename
+   //arquivo[i].mimetype = file[i].mimetype
+ }
+console.log(arquivo)
+})
 
 app.get('/', (req, res) => {
   res.render('index1Busca')
