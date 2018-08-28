@@ -1,0 +1,21 @@
+<html lang="pt-br">
+  <head>
+    <title>Contratos</title>
+    <meta charset="utf-8">
+  </head>
+  <body>
+
+      <% if(docs.length !== 0) { %>
+      <ul>
+        <% docs.forEach(function(item) { %>
+        <li>
+          <% console.log(item) %>
+          <a href="/download/<%= item.idContrato %>/<%= item.idDocumento %>"><%= item.name %></a>
+        </li>
+        <% }) %>
+      </ul>
+      <% } else { %>
+        <p>Nenhum contrato foi encontrado!</p>
+      <% } %>
+  </body>
+</html>

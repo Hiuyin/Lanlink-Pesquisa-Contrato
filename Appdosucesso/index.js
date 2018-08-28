@@ -3,6 +3,7 @@ const fs = require('fs')
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
 const hostname = ['127.0.0.1','10.85.50.152'];
 const Sequelize = require('sequelize');
 const port = 3000;
@@ -44,14 +45,29 @@ const sequelize = new Sequelize('DataSwitch', 'BuscaContrato', '!Q@W#E1q2w3e2018
     return new Buffer(arquivo).toString('base64')
 }
 
-function base64_decode(base64str, file) {
-    // create buffer object from base64 encoded string, it is important to tell the constructor that the string is base64 encoded
+function base64_decodeVisual(base64str, file,res) {
+    
     var bitmap = new Buffer(base64str, 'base64');
-    // write buffer to file
-    fs.writeFileSync(file, bitmap);
+    
+    console.log(bitmap)
+    console.log(file)
+    res.writeHead(200, {'Content-Type': 'application/pdf'});
+    res.end(bitmap, 'binary');
+   // res.download(file,bitmap)
     console.log('******** File created from base64 encoded string ********');
 }
 
+
+function base64_decodeDownload(base64str, file,res) {
+    
+  var bitmap = new Buffer(base64str, 'base64');
+  
+  console.log(bitmap)
+  console.log(file)
+  res.end(bitmap, 'binary');
+ // res.download(file,bitmap)
+  console.log('******** File created from base64 encoded string ********');
+}
 
 function unicoItem (array){
   return array.filter(function(elem, pos,arr) {
@@ -75,14 +91,49 @@ function recebeArraySQL(valor,res){
      resultados[i][j].id = resultado[i][j].IDContrato ;
     }
   }
-
-  
-
   res.render('contratos', { contratos : unicoItem(resultados[0])})
-  
 })
 
+
 }
+
+
+function downloadDocumento(idcontrato,iddocumento,res){
+  sequelize.query("SELECT filename,documentBody FROM documentoCRM where idcontrato = :search and iddocumento = :searchdoc",
+  { replacements: { search: idcontrato, searchdoc: iddocumento }}
+  ,{ type: sequelize.QueryTypes.SELECT}
+  ).then((doc)=>{
+    let filepath = 'E:\\Allah\\'+doc[0][0].filename
+    let filename = doc[0][0].filename
+    let file = doc[0][0].documentBody
+    let filelocation = path.join('./download',filename)
+    console.log(filelocation)
+    console.log(filename)
+    base64_decodeVisual(file,filelocation,res)
+  })
+}
+
+function recebeDocumentos(valor,res){
+  sequelize.query("SELECT distinct iddocumento,filename FROM documentoCRM where idcontrato = :search",
+  { replacements: { search: valor }}
+  ,{ type: sequelize.QueryTypes.SELECT}
+  ).then((docs) => {
+    const doc = [[],[]]
+    for(var i = 0;i<=docs.length-1;i++)
+    {
+      for(var j=0;j<=docs[i].length-1;j++)
+      {
+      console.log(docs[i][j])
+       // console.log(resultado[i][j].pjo_name);
+       doc[i][j] = {}
+       doc[i][j].name = docs[i][j].filename;
+       doc[i][j].idDocumento = docs[i][j].iddocumento;
+       doc[i][j].idContrato = valor
+      }
+    }
+    res.render('arquivos', {docs : unicoItem(doc[0])})
+  })
+  }
 
 /*
 const server = http.createServer((req, res) => {
@@ -95,30 +146,30 @@ const server = http.createServer((req, res) => {
     for(let i = 0; i<=results.length;i++){
       let filename = 'E:\\Allah\\'+results[i].FileName
       let file = results[i].DocumentBody
-      //console.log(filename)
-      //console.log(file)
-     // base64_decode(file,filename)
-      //   fs.readFile(file, 'utf8', function (err,data) {
-      //   if (err) {
-      //     return console.log(err);
-      //   }
-      // });
+      console.log(filename)
+      console.log(file)
+     base64_decode(file,filename)
+        fs.readFile(file, 'utf8', function (err,data) {
+        if (err) {
+          return console.log(err);
+        }
+      });
 
       
-      //res.end(`testando ${results[i]}`)
+      res.end(`testando ${results[i]}`)
       
-      // console.log(metadata.dataValues.FileName)
+      console.log(metadata.dataValues.FileName)
     }
       
   
 
   })
- // res.end(`teste ${go}`);
+ res.end(`teste ${go}`);
 
   
 });
-
 */
+
 
 app.use(cors());
 
@@ -132,9 +183,7 @@ app.use(express.static('assets'))
 app.get('/enviaPesquisa',async (req, res) => {
 
   console.log("joao vito é gordo")
-   //console.log(recebeArraySQL(req.query.search))
   const teste = await recebeArraySQL(req.query.search, res)
-   //console.log(recuperaValor(req.query.search))
    console.log(teste)
    console.log("joao vito é gordo")
   
@@ -143,11 +192,19 @@ app.get('/enviaPesquisa',async (req, res) => {
   // console.log("joao vito é gordo")
 
 });
-app.get('/arquivos/:id', (req,res)=> {
+app.get('/arquivos/:id', async (req,res)=> {
   const id = req.params.id
 
-  
+  recebeDocumentos(id,res)
 })
+
+app.get('/download/:idContrato/:idDocumento', (req, res) => {
+  const idContrato = req.params.idContrato
+  const idDocumento = req.params.idDocumento
+  downloadDocumento(idContrato,idDocumento,res)
+
+  
+});
 
 app.get('/', (req, res) => {
   res.render('index1Busca')
