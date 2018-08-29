@@ -141,7 +141,7 @@ function downloadDocumento(idcontrato,iddocumento,res){
 }
 
 function recebeDocumentos(valor,res){
-  sequelize.query("SELECT distinct iddocumento,filename FROM documentoCRM where idcontrato = :search",
+  sequelize.query("SELECT distinct contrato,iddocumento,filename FROM documentoCRM where idcontrato = :search",
   { replacements: { search: valor }}
   ,{ type: sequelize.QueryTypes.SELECT}
   ).then((docs) => {
@@ -155,9 +155,10 @@ function recebeDocumentos(valor,res){
        doc[i][j].name = docs[i][j].filename;
        doc[i][j].idDocumento = docs[i][j].iddocumento;
        doc[i][j].idContrato = valor
+       doc[i][j].contrato = docs[i][j].contrato
       }
     }
-    res.render('arquivos', {docs : unicoItem(doc[0]),idContrato: valor})
+    res.render('index3Visualizacao', {docs : unicoItem(doc[0]),idContrato: valor})
   })
   }
 

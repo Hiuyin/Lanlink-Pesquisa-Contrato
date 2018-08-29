@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width-device-width, initial-scale=1">
+	<title>Visualização de Contratos</title>
+	<link rel="stylesheet" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/css/estilo3.css">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+
+	<!-- Imagem LLK logo -->
+	<div>
+		<a href="/">
+        	<img src="/imagens/lanlink1.png" id="llk_img2">
+    	</a>
+	</div>
+
+	
+
+
+    <!-- Mensagem de exibição -->
+	<div id= "msgResult3">
+		<p>
+			<font size="5" face="arial">
+				<a href="/arquivos/<%= docs[0].idContrato%>"><b>Documentos do Contrato </b></a>
+			</font>
+		</p>
+	</div>
+
+	
+
+
+    <!-- Botão de voltar -->
+	<div id= "btnVoltar">
+		<a href="/enviaPesquisa?search=<%= docs[0].contrato %>">
+			<u><b>Voltar para Contratos</b></u></p>
+		</a>
+	</div>
+	 
+    
+
+	
+	<!--Botão de Download -->
+	<form action="/downloadContrato/<%= docs[0].idContrato %>">
+    <button  type="submit" class="btn btn-primary btn-xs" id= "btnDownload">Baixar todos documentos</button> 
+	</form>
+
+
+	<!--Botão de anexar documentos -->
+    <button type= "button" class="btn btn-warning btn-xs" id= "btnAnexar" data-toggle="modal fade" data-target="myModal">
+Anexar documentos</button> 
+
+   
+
+
+    <!-- Lista -->
+    <div id="main" class="container-fluid">     	
+     	<div id="list">
+     		<div class="table-responsive col-md-12">
+        		<table class="table table-striped" cellspacing="0" cellpadding="0">
+            		<thead>
+                		<tr>
+                    		<th>Documentos</th>
+                    		<th></th>
+                    		<th></th>
+                    		<th></th>
+                    		<th class="actions">Ações</th>
+                 		</tr>
+            		</thead>
+            		<tbody>
+							<% if(docs.length !== 0) { %>
+								<% docs.forEach(function(item) { %>
+                		<tr>
+                    	    <td><%= item.name %></td>
+                    	    <td></td>
+                    	    <td></td>
+                    	    <td></td>
+                    	    <td class="actions">
+									<a class="btn btn-success btn-xs" href="/download/<%= item.idContrato %>/<%= item.idDocumento %>">Baixar documento</a>
+									<a class="btn btn-danger btn-xs" href="/delete/<%= item.idContrato %>/<%= item.idDocumento %>" >Excluir documento</a>                                 
+                   		    </td>
+							</tr>
+							<% }) %>
+							<% } else { %>
+								<tr>
+									<td>Nenhum Documento Encontrato</td>
+								</tr>
+								<% } %>
+            		</tbody>
+        	    </table>
+     	    </div>
+     	</div>
+ 	</div>  <!-- /#main -->
+
+
+
+
+
+    <!-- Container Modal -->
+    <div class="container">
+    
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content"> <!-- Modal content-->
+                
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+        
+                <div class="modal-body">
+                    <div id="btnUpload"> <!-- Botão de Upload --> 
+                        <form action="/upload/<%= idContrato %>" method="post"  enctype="multipart/form-data">
+                            <input type="file" name="uploaded" value="upload" multiple><br>
+                            <input type="submit" value="Enviar">
+                            <input type="reset" value="Cancelar"> 
+                        </form>
+                    </div>  
+                </div>
+        
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>   
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Função Js Modal -->
+    <script>
+    $(document).ready(function(){
+        $("#btnAnexar").click(function(){
+            $("#myModal").modal();
+            });
+        });
+    </script>
+
+</body>
+</html>
