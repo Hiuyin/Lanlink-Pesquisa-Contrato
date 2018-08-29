@@ -1,14 +1,15 @@
-const fs = require('fs')
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const archiver = require('archiver');
 const multer = require('multer')
 const hostname = ['127.0.0.1','10.85.50.152'];
 const Sequelize = require('sequelize');
 const port = 3000;
 const app = express();
 const upload = multer();
+
 const sequelize = new Sequelize('DataSwitch', 'BuscaContrato', '!Q@W#E1q2w3e2018', {
     host: '10.85.1.19',
     dialect: 'mssql',
@@ -22,24 +23,7 @@ const sequelize = new Sequelize('DataSwitch', 'BuscaContrato', '!Q@W#E1q2w3e2018
     },
     
   });
-  const testeAnotation = sequelize.define('testeAnotation', {
-    AnnotationId: {
-       type: Sequelize.STRING,
-       primaryKey: true,
-        autoIncrement: false,
-    },
-    ObjectId: Sequelize.STRING,
-    MimeType: Sequelize.STRING,
-    FileName: Sequelize.STRING,
-    FileSize: Sequelize.INTEGER,
-    DocumentBody: Sequelize.STRING,
-    //FileStream: Sequelize.STRING
-  },{
-      timestamps: false,
-      freezeTableName: true,
-      tableName: 'testeAnotation'
-  })
-
+  
   function base64_encode(file){
     var arquivo = fs.readFileSync(file);
     return new Buffer(arquivo).toString('base64')
@@ -48,9 +32,6 @@ const sequelize = new Sequelize('DataSwitch', 'BuscaContrato', '!Q@W#E1q2w3e2018
 function base64_decodeVisual(base64str, file,fileType,filename,res) {
     
     var bitmap = new Buffer(base64str, 'base64');
-    
-    console.log(bitmap)
-    console.log(file)
     res.writeHead(200, {'Content-Type': fileType,
     "Content-Disposition": "attachment;filename=" + filename});
     res.end(bitmap, 'binary');
@@ -108,6 +89,42 @@ function salvaDocumentos(files,idContrato,res){
   })
     res.redirect('/arquivos/'+idContrato)
 
+}
+function enviarArquivoZip(arquivos,contrato,res){
+  var Name = contrato.replace('/','').replace('\\','')
+  var arquivo = archiver('zip', {
+    gzip: true,
+    zlib: { level: 9 }
+  })
+  arquivo.on('close', function(){
+    console.log('Teste de arquivo', arquivo.pointer())
+  })
+  res.attachment(Name+'.zip')
+  arquivo.pipe(res)
+  for(var i = 0; i<=arquivos.length-1; i++){
+    arquivo.append(arquivos[i].buffer,{name: arquivos[i].name})
+    //console.log(arquivos[i].name)
+  }
+  arquivo.finalize()
+}
+
+function downloadContrato(idContrato,res){
+  var arquivo2=[{}]
+  var contrato
+  sequelize.query("SELECT Contrato,filename,tipo,documentBody FROM documentoCRM where idcontrato = :search",
+  {replacements : { search : idContrato}},
+  { type: sequelize.QueryTypes.SELECT}
+  ).then((arquivo)=>{
+    for(var i = 0; i<= arquivo[0].length-1;i++){
+      let buffer = new Buffer(arquivo[0][i].documentBody, 'base64')
+      arquivo2[i]= {buffer,name : arquivo[0][i].filename}
+      contrato = arquivo[0][i].Contrato
+    }
+    enviarArquivoZip(arquivo2,contrato,res)
+  })
+
+  //setTimeout(enviarArquivoZip,10000,arquivos,res)
+ // console.log('Ola')
 }
 
 function downloadDocumento(idcontrato,iddocumento,res){
@@ -170,6 +187,13 @@ app.get('/download/:idContrato/:idDocumento', (req, res) => {
   const idDocumento = req.params.idDocumento
   downloadDocumento(idContrato,idDocumento,res)
 });
+
+app.get('/downloadContrato/:idContrato', (req,res)=>{
+  const idContrato = req.params.idContrato
+  downloadContrato(idContrato,res)
+  //res.send("Efetuando download do contrato "+idContrato)
+})
+
 
 app.post('/upload/:idContrato',upload.array('uploaded',4), async (req,res)=>{
   const idContrato = req.params.idContrato
