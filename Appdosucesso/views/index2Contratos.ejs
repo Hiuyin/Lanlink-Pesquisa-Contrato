@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width-device-width, initial-scale=1">
+	<title>Contratos</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="css/estilo2.css">
+	
+</head>
+<body>
+	
+	<!-- Imagem LLK logo -->
+	<a href="/">
+        <img src="imagens/lanlink1.png" id="llk_img2">
+    </a>
+	
+
+
+	<!-- Mensagem de exibição -->
+	<p id="msgResult" >
+		<font size="15" face="arial">
+			<b>Contratos Lanlink</b>
+		</font>
+	</p>
+    	
+     	
+
+     	<!-- /#list -->
+     
+     	<div id="list">
+     	
+     		<div class="table-responsive col-md-12">
+        		<table class="table table-striped" cellspacing="0" cellpadding="0">
+            		<thead>
+                		<tr>
+                    		<th>Contratos</th>
+                    		<th></th>
+                    		<th></th>
+                    		<th></th>
+                    		<th class="actions">Ações</th>
+                 		</tr>
+            		</thead>
+            		<tbody>
+						<% if(contratos.length !== 0) { %>
+							<% contratos.forEach(function(item) { %>
+                		<tr>
+							
+                    		<td><%= item.name %></td>
+							<td></td>
+							<td></td>
+							<td></td>
+                    		<td class="actions">
+                        		<a class="btn btn-info btn-xs" href="/arquivos/<%= item.id %>">Visualizar arquivos do contrato</a>
+                        		<!--<a class="btn btn-success btn-xs" href="index4Download.html">Baixar Contrato</a>   -->
+
+                                <!--<a class="btn btn-warning btn-xs" href="edit.html">Do</a>-->
+                        		
+                                    <!--<a class="btn btn-danger btn-xs"  href="#" data-toggle="modal" data-target="#delete-modal">Excluir</a> -->
+								</td>
+								
+							</tr>
+							<% }) %>
+							<% } else { %>
+								<tr>
+									<td>Nenhum Contrato Encontrado</td>
+								</tr>
+								<% } %>
+							
+
+
+            		</tbody>
+        	    </table>
+ 
+     	</div>
+     	</div> <!-- /#list -->
+ 
+
+
+ 	</div>  <!-- /#main -->
+	
+
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -11,13 +11,17 @@
         <li>
           <% console.log(item) %>
           <a href="/download/<%= item.idContrato %>/<%= item.idDocumento %>"><%= item.name %></a>
+          <form action="/delete/<%= item.idContrato %>/<%= item.idDocumento %>">
+            <button type="submit">delete</button>
+          </form>
+          
         </li>
         <% }) %>
       </ul>
       <% } else { %>
         <p>Nenhum contrato foi encontrado!</p>
       <% } %>
-      <form action="/upload/<%= item.idContrato %>/<%= item.idDocumento %>" method="post" enctype="multipart/form-data">
+      <form action="/upload/<%= idContrato %>" method="post" enctype="multipart/form-data">
         <input type="file" name="uploaded" value="upload" multiple>
         <input type="submit" value="upload">
       </form>

@@ -1,0 +1,19 @@
+/*Texto de exibição de busca*/
+
+#msgResult{
+	 margin-top: 4%;
+  	text-align: center;
+}
+
+#llk_img2{
+  width: 220px;
+  height: 50px;
+  margin-top: 1%;
+  margin-left: 1%;
+}
+
+#list{
+
+	margin-top: 40px;
+
+}

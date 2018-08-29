@@ -58,16 +58,6 @@ function base64_decodeVisual(base64str, file,fileType,filename,res) {
 }
 
 
-function base64_decodeDownload(base64str, file,res) {
-    
-  var bitmap = new Buffer(base64str, 'base64');
-  
-  console.log(bitmap)
-  console.log(file)
-  res.end(bitmap, 'binary');
- // res.download(file,bitmap)
-  console.log('******** File created from base64 encoded string ********');
-}
 
 function unicoItem (array){
   return array.filter(function(elem, pos,arr) {
@@ -91,19 +81,40 @@ function recebeArraySQL(valor,res){
      resultados[i][j].id = resultado[i][j].IDContrato ;
     }
   }
-  res.render('contratos', { contratos : unicoItem(resultados[0])})
+  res.render('index2Contratos', { contratos : unicoItem(resultados[0])})
 })
 
 
 }
 
+function deletaDocumento(idContrato,idDocumento,res){
+  sequelize.query("delete from dbo.documentoCRM where idcontrato = :idcontrato and iddocumento = :iddocumento",
+    {replacements: { idcontrato : idContrato, iddocumento : idDocumento }
+    })
+    res.redirect("/arquivos/"+idContrato)
+}
+
+function salvaDocumentos(files,idContrato,res){
+  files.forEach(function(file) {
+    var arq = file.buffer.toString('base64')  
+   sequelize.query("insert into dbo.documentoCRM ( IDContrato, contrato, IDDocumento, FileName, DocumentBody, tipo ) values (:idcontrato, (select distinct contrato from documentoCRM where idContrato = :contrato),dbo.ultimoDocContrato(:iddocumento),:filename,:documentbody,:tipo )",
+  { replacements: { idcontrato : idContrato,
+                    contrato : idContrato,
+                    iddocumento : idContrato,
+                    filename : file.originalname,
+                    documentbody : arq,
+                    tipo : file.mimetype }
+    })
+  })
+    res.redirect('/arquivos/'+idContrato)
+
+}
 
 function downloadDocumento(idcontrato,iddocumento,res){
   sequelize.query("SELECT filename,tipo,documentBody FROM documentoCRM where idcontrato = :search and iddocumento = :searchdoc",
   { replacements: { search: idcontrato, searchdoc: iddocumento }}
   ,{ type: sequelize.QueryTypes.SELECT}
   ).then((doc)=>{
-    let filepath = 'E:\\Allah\\'+doc[0][0].filename
     let filename = doc[0][0].filename
     let file = doc[0][0].documentBody
     let filelocation = path.join('./download',filename)
@@ -123,52 +134,15 @@ function recebeDocumentos(valor,res){
       for(var j=0;j<=docs[i].length-1;j++)
       {
       console.log(docs[i][j])
-       // console.log(resultado[i][j].pjo_name);
        doc[i][j] = {}
        doc[i][j].name = docs[i][j].filename;
        doc[i][j].idDocumento = docs[i][j].iddocumento;
        doc[i][j].idContrato = valor
       }
     }
-    res.render('arquivos', {docs : unicoItem(doc[0])})
+    res.render('arquivos', {docs : unicoItem(doc[0]),idContrato: valor})
   })
   }
-
-/*
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  
-
- sequelize.query("select  objectID,FileName,DocumentBody from testeAnotation",{ type: sequelize.QueryTypes.SELECT})
-  .then((results) =>{
-    for(let i = 0; i<=results.length;i++){
-      let filename = 'E:\\Allah\\'+results[i].FileName
-      let file = results[i].DocumentBody
-      console.log(filename)
-      console.log(file)
-     base64_decode(file,filename)
-        fs.readFile(file, 'utf8', function (err,data) {
-        if (err) {
-          return console.log(err);
-        }
-      });
-
-      
-      res.end(`testando ${results[i]}`)
-      
-      console.log(metadata.dataValues.FileName)
-    }
-      
-  
-
-  })
- res.end(`teste ${go}`);
-
-  
-});
-*/
-
 
 app.use(cors());
 
@@ -181,15 +155,9 @@ app.use(express.static('assets'))
 
 app.get('/enviaPesquisa',async (req, res) => {
 
-  console.log("joao vito é gordo")
+  
   const teste = await recebeArraySQL(req.query.search, res)
    console.log(teste)
-   console.log("joao vito é gordo")
-  
-  
-  //res.render('contratos')
-  // console.log("joao vito é gordo")
-
 });
 app.get('/arquivos/:id', async (req,res)=> {
   const id = req.params.id
@@ -203,15 +171,16 @@ app.get('/download/:idContrato/:idDocumento', (req, res) => {
   downloadDocumento(idContrato,idDocumento,res)
 });
 
-app.post('/upload',upload.array('uploaded',10), (req,res)=>{
-var file = req.files;
-var arquivo = []
- for(var i = 0; i<= file.length;i++){
-   console.log(file[i])
-   //arquivo[i].filename = file[i].filename
-   //arquivo[i].mimetype = file[i].mimetype
- }
-console.log(arquivo)
+app.post('/upload/:idContrato',upload.array('uploaded',4), async (req,res)=>{
+  const idContrato = req.params.idContrato
+  var files = req.files;
+  await salvaDocumentos(files,idContrato,res) 
+  res.redirect('/arquivos/'+idContrato)
+})
+app.get('/delete/:idContrato/:idDocumento', async (req,res) =>{
+  const idContrato = req.params.idContrato
+  const idDocumento = req.params.idDocumento
+  deletaDocumento(idContrato,idDocumento,res)
 })
 
 app.get('/', (req, res) => {

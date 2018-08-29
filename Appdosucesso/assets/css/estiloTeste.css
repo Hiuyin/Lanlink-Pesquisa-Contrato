@@ -1,0 +1,42 @@
+
+/*Mecanismo de busca*/
+
+.container {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto; 
+  position: relative;  /* cria o contexto de posicionamento do botão */ 
+}
+
+	input {width: 50%;} /* define a largura do campo igual a largura do container */
+	input {margin-top: 5%}
+	input {margin-left: 24%}
+	input,  button {padding: 8px;}
+  input {} 
+
+button {
+  position: static;   
+  top: 51%; 
+  right: 25%;
+  /* posiciona o botão em relação ao container, mas
+  como o campo está exatamente contido no container
+  o posicionamento se dá também em relação ao campo */
+}
+
+
+/*Tramento do logo lanlink*/
+
+#llk_img1{
+  width: 220px;
+  height: 50px;
+  margin-top: 1%;
+  margin-left: 1%
+}
+
+/*NOME CENTRAL*/
+#nomeCentral{
+  margin-top: 8%;
+  text-align: center;
+
+}
