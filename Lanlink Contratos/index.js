@@ -78,13 +78,14 @@ function deletaDocumento(idContrato,idDocumento,res){
 function salvaDocumentos(files,idContrato,res){
   files.forEach(function(file) {
     var arq = file.buffer.toString('base64')  
-   sequelize.query("insert into dbo.documentoCRM ( IDContrato, contrato, IDDocumento, FileName, DocumentBody, tipo ) values (:idcontrato, (select distinct contrato from documentoCRM where idContrato = :contrato),dbo.ultimoDocContrato(:iddocumento),:filename,:documentbody,:tipo )",
+   sequelize.query("insert into dbo.documentoCRM ( IDContrato, contrato, IDDocumento, FileName, DocumentBody, tipo,fonte ) values (:idcontrato, (select distinct contrato from documentoCRM where idContrato = :contrato),dbo.ultimoDocContrato(:iddocumento),:filename,:documentbody,:tipo,:fonte )",
   { replacements: { idcontrato : idContrato,
                     contrato : idContrato,
                     iddocumento : idContrato,
                     filename : file.originalname,
                     documentbody : arq,
-                    tipo : file.mimetype }
+                    tipo : file.mimetype,
+                    fonte: 'sapiens' }
     })
   })
     res.redirect('/arquivos/'+idContrato)
@@ -141,7 +142,7 @@ function downloadDocumento(idcontrato,iddocumento,res){
 }
 
 function recebeDocumentos(valor,res){
-  sequelize.query("SELECT distinct contrato,iddocumento,filename FROM documentoCRM where idcontrato = :search",
+  sequelize.query("SELECT distinct contrato,iddocumento,filename,fonte FROM documentoCRM where idcontrato = :search",
   { replacements: { search: valor }}
   ,{ type: sequelize.QueryTypes.SELECT}
   ).then((docs) => {
@@ -156,6 +157,7 @@ function recebeDocumentos(valor,res){
        doc[i][j].idDocumento = docs[i][j].iddocumento;
        doc[i][j].idContrato = valor
        doc[i][j].contrato = docs[i][j].contrato
+       doc[i][j].fonte = docs[i][j].fonte
       }
     }
     res.render('index3Visualizacao', {docs : unicoItem(doc[0]),idContrato: valor})

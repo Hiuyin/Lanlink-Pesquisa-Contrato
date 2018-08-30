@@ -82,7 +82,11 @@ Anexar documentos</button>
                     	    <td></td>
                     	    <td class="actions">
 									<a class="btn btn-success btn-xs" href="/download/<%= item.idContrato %>/<%= item.idDocumento %>">Baixar documento</a>
-									<!--<a class="btn btn-danger btn-xs" href="/delete/<%= item.idContrato %>/<%= item.idDocumento %>" >Excluir documento</a>-->                                 
+									<% if(item.fonte == 'crm') {%>
+									<a class="btn btn-danger btn-xs excluir-documento hide" idDocumento="<%= item.idDocumento %>" idContrato="<%= item.idContrato %>" >Excluir documento</a>
+									<% } else { %>
+									<a class="btn btn-danger btn-xs excluir-documento" idDocumento="<%= item.idDocumento %>" idContrato="<%= item.idContrato %>" >Excluir documento</a>
+										<% } %>                                 
                    		    </td>
 							</tr>
 							<% }) %>
@@ -103,7 +107,32 @@ Anexar documentos</button>
 
     <!-- Container Modal -->
     <div class="container">
-    
+	
+	<!--Modal de Confirmação-->
+	<div class="modal fade" id="confirm" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content"> <!-- Modal content-->
+					
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+			
+					<div class="modal-body">
+						<div>
+							Você tem certeza que deseja excluir esse documento ?
+						</div>
+					</div>
+			
+					<div class="modal-footer">
+						<a class="btn btn-danger excluir-documento-modal" href="" data-dismiss="modal">Excluir</a> 
+						<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>     
+					</div>
+				</div>
+			</div>
+		</div>
+	
+
+
     <!-- Modal -->
     <div class="modal fade" id="myModal" role="dialog">
         <div class="modal-dialog">
@@ -115,7 +144,7 @@ Anexar documentos</button>
         
                 <div class="modal-body">
                     <div id="btnUpload"> <!-- Botão de Upload --> 
-                        <form action="/upload/<%= idContrato %>" method="post"  enctype="multipart/form-data">
+                        <form  id= "formEnvio" action="/upload/<%= idContrato %>" method="post"  enctype="multipart/form-data">
                             <input type="file" name="uploaded" value="upload" multiple><br>
                             <input type="submit" value="Enviar">
                             <input type="reset" value="Cancelar"> 
@@ -139,7 +168,45 @@ Anexar documentos</button>
             $("#myModal").modal();
             });
         });
-    </script>
+	</script>
+	<script>
+			$(document).ready(function(){
+				$(".excluir-documento").click(function(){
+					var idDocumento = $(this).attr('idDocumento')
+					var idContrato = $(this).attr('idContrato')
+					$("#confirm").find('a.excluir-documento-modal').on('click', function() {
+						$.get({
+							url: '/delete/' + idContrato + '/' + idDocumento,
+							success: function() {
+								window.location.reload()
+							}
+						})
+					})
+					$("#confirm").modal();
+					});
+				});
+			</script>
+	<!--Função para pedir confirmação de ação-->
+	<script>
+		
+	</script>
+	<!--Função para Bloquear numero de envios-->
+	<script>
+	$(document).ready(function(){
+		$("#formEnvio").on('submit', function(event){
+			if($('[name=uploaded]', this)[0].files.length<=4){
+				$("#formEnvio").submit()
+			}else{
+				event.preventDefault();
+				alert("O Limite de UPLOAD é de 4(Quatro) itens")
+			}
+			
+
+			
+		})
+
+	})
+	</script>
 
 </body>
 </html>
