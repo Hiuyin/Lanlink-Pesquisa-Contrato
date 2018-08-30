@@ -1,18 +1,21 @@
+const env = require('./configs/env')
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const archiver = require('archiver');
 const multer = require('multer')
-const hostname = ['127.0.0.1','10.85.50.152'];
+const hostname = ['127.0.0.1', env.server.host];
 const Sequelize = require('sequelize');
 const port = 3000;
 const app = express();
 const upload = multer();
 
-const sequelize = new Sequelize('DataSwitch', 'BuscaContrato', '!Q@W#E1q2w3e2018', {
-    host: '10.85.1.19',
-    dialect: 'mssql',
+console.log(env)
+
+const sequelize = new Sequelize(env.database.name, env.database.user, env.database.pass, {
+    host: env.database.host,
+    dialect: env.database.dialect,
     operatorsAliases: false,
   
     pool: {
