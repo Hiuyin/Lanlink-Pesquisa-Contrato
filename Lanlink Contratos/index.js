@@ -1,23 +1,46 @@
 const env = require('./configs/env')
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const session = require('express-session')
 const cors = require('cors');
 const path = require('path');
 const archiver = require('archiver');
-const multer = require('multer')
+const multer = require('multer');
+const ejs = require('ejs')
+const ActiveDirectory = require('activedirectory')
 const hostname = ['127.0.0.1', env.server.host];
 const Sequelize = require('sequelize');
 const port = 3000;
 const app = express();
 const upload = multer();
+console.log(process.env.NODE_ENV)
 
-console.log(env)
+var sess={
+  secret: 'contratoDaVitoria',
+  login: '',
+  cookie: {}
+}
+
+const config = {
+  url: env.active.url,
+  baseDN: env.active.basedn,
+  username: env.active.user,
+  password: env.active.pass
+}
+var ad = new ActiveDirectory(config)
+
+
+//console.log(env)
+//console.log(env.database.dialectOptions.instanceName)
+
 
 const sequelize = new Sequelize(env.database.name, env.database.user, env.database.pass, {
     host: env.database.host,
     dialect: env.database.dialect,
+    //dialectOptions: env.database.dialectOptions,
+    port: 1433,
     operatorsAliases: false,
-  
     pool: {
       max: 5,
       min: 0,
@@ -26,6 +49,15 @@ const sequelize = new Sequelize(env.database.name, env.database.user, env.databa
     },
     
   });
+
+
+  function isAuthenticated(req, res, next) {
+    if (req.session.isAuthenticated == true) {
+      next();
+    } else {
+      res.render('Auth')
+    }
+  }
   
   function base64_encode(file){
     var arquivo = fs.readFileSync(file);
@@ -50,7 +82,7 @@ function unicoItem (array){
 }
 
 function recebeArraySQL(valor,res){
-  sequelize.query("SELECT distinct contrato, IDContrato FROM documentoCRM where contrato like :search",
+  sequelize.query("SELECT distinct contrato, IDContrato FROM "+env.database.table+" where contrato like :search",
   { replacements: { search:'%'+valor+'%' }}
   ,{ type: sequelize.QueryTypes.SELECT}
 ).then((resultado) => {
@@ -71,8 +103,10 @@ function recebeArraySQL(valor,res){
 
 }
 
+
+
 function deletaDocumento(idContrato,idDocumento,res){
-  sequelize.query("delete from dbo.documentoCRM where idcontrato = :idcontrato and iddocumento = :iddocumento",
+  sequelize.query("delete from dbo."+env.database.table+" where idcontrato = :idcontrato and iddocumento = :iddocumento",
     {replacements: { idcontrato : idContrato, iddocumento : idDocumento }
     })
     res.redirect("/arquivos/"+idContrato)
@@ -81,7 +115,7 @@ function deletaDocumento(idContrato,idDocumento,res){
 function salvaDocumentos(files,idContrato,res){
   files.forEach(function(file) {
     var arq = file.buffer.toString('base64')  
-   sequelize.query("insert into dbo.documentoCRM ( IDContrato, contrato, IDDocumento, FileName, DocumentBody, tipo,fonte ) values (:idcontrato, (select distinct contrato from documentoCRM where idContrato = :contrato),dbo.ultimoDocContrato(:iddocumento),:filename,:documentbody,:tipo,:fonte )",
+   sequelize.query("insert into dbo."+env.database.table+" ( IDContrato, contrato, IDDocumento, FileName, DocumentBody, tipo,fonte ) values (:idcontrato, (select distinct contrato from "+env.database.table+" where idContrato = :contrato),dbo.ultimoDocContrato(:iddocumento),:filename,:documentbody,:tipo,:fonte )",
   { replacements: { idcontrato : idContrato,
                     contrato : idContrato,
                     iddocumento : idContrato,
@@ -91,7 +125,7 @@ function salvaDocumentos(files,idContrato,res){
                     fonte: 'sapiens' }
     })
   })
-    res.redirect('/arquivos/'+idContrato)
+  res.redirect('/arquivos/'+idContrato)
 
 }
 function enviarArquivoZip(arquivos,contrato,res){
@@ -115,7 +149,7 @@ function enviarArquivoZip(arquivos,contrato,res){
 function downloadContrato(idContrato,res){
   var arquivo2=[{}]
   var contrato
-  sequelize.query("SELECT Contrato,filename,tipo,documentBody FROM documentoCRM where idcontrato = :search",
+  sequelize.query("SELECT Contrato,filename,tipo,documentBody FROM "+env.database.table+" where idcontrato = :search",
   {replacements : { search : idContrato}},
   { type: sequelize.QueryTypes.SELECT}
   ).then((arquivo)=>{
@@ -132,7 +166,7 @@ function downloadContrato(idContrato,res){
 }
 
 function downloadDocumento(idcontrato,iddocumento,res){
-  sequelize.query("SELECT filename,tipo,documentBody FROM documentoCRM where idcontrato = :search and iddocumento = :searchdoc",
+  sequelize.query("SELECT filename,tipo,documentBody FROM "+env.database.table+" where idcontrato = :search and iddocumento = :searchdoc",
   { replacements: { search: idcontrato, searchdoc: iddocumento }}
   ,{ type: sequelize.QueryTypes.SELECT}
   ).then((doc)=>{
@@ -145,7 +179,7 @@ function downloadDocumento(idcontrato,iddocumento,res){
 }
 
 function recebeDocumentos(valor,res){
-  sequelize.query("SELECT distinct contrato,iddocumento,filename,fonte FROM documentoCRM where idcontrato = :search",
+  sequelize.query("SELECT distinct contrato,iddocumento,filename,fonte FROM "+env.database.table+" where idcontrato = :search",
   { replacements: { search: valor }}
   ,{ type: sequelize.QueryTypes.SELECT}
   ).then((docs) => {
@@ -167,56 +201,115 @@ function recebeDocumentos(valor,res){
   })
   }
 
-app.use(cors());
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
+app.use(cookieParser())
 app.set('views', './views')
 app.set('view engine', 'ejs')
-app.use(express.static('assets'))
+app.use(express.static(path.join(__dirname,'./','assets')))
 
+if(process.env.NODE_ENV==='production'){
+  app.set('trust proxy',1)
+  sess.cookie.secure = true
+}
+app.use(session(sess))
 app.get('/enviaPesquisa',async (req, res) => {
-
   
-  const teste = await recebeArraySQL(req.query.search, res)
-   console.log(teste)
+  if(req.session.isAuthenticated){
+    const teste = await recebeArraySQL(req.query.search, res)
+    console.log(sess.login)
+  } else {
+    res.redirect('/')
+  }
 });
 app.get('/arquivos/:id', async (req,res)=> {
-  const id = req.params.id
-
-  recebeDocumentos(id,res)
+  if(req.session.isAuthenticated){
+    const id = req.params.id
+    recebeDocumentos(id,res)
+  } else {
+    res.redirect('/')
+  }
 })
 
 app.get('/download/:idContrato/:idDocumento', (req, res) => {
-  const idContrato = req.params.idContrato
-  const idDocumento = req.params.idDocumento
-  downloadDocumento(idContrato,idDocumento,res)
-});
+  if(req.session.isAuthenticated){  
+    const idContrato = req.params.idContrato
+    const idDocumento = req.params.idDocumento
+    downloadDocumento(idContrato,idDocumento,res)
+  } else {
+    res.redirect('/')
+  }
+  });
 
 app.get('/downloadContrato/:idContrato', (req,res)=>{
+  if(req.session.isAuthenticated){
   const idContrato = req.params.idContrato
   downloadContrato(idContrato,res)
-  //res.send("Efetuando download do contrato "+idContrato)
+} else {
+  res.redirect('/')
+}
 })
 
 
 app.post('/upload/:idContrato',upload.array('uploaded',4), async (req,res)=>{
+  if(req.session.isAuthenticated){
   const idContrato = req.params.idContrato
   var files = req.files;
   await salvaDocumentos(files,idContrato,res) 
   res.redirect('/arquivos/'+idContrato)
+  } else {
+    res.redirect('/')
+  }
 })
 app.get('/delete/:idContrato/:idDocumento', async (req,res) =>{
+  if(req.session.isAuthenticated){
   const idContrato = req.params.idContrato
   const idDocumento = req.params.idDocumento
   deletaDocumento(idContrato,idDocumento,res)
+  } else {
+    res.redirect('/')
+  }
+})
+app.post('/loggin',(req,res)=>{
+  var username = req.body.login
+  var password = req.body.password
+    
+  ad.authenticate(username,password,function(err,auth){
+    if(err){
+      console.log('Erro '+JSON.stringify(err))
+      res.send('Login falhou')
+      return;
+    }
+    if(auth){
+      console.log('Show')
+      req.session.isAuthenticated = true;
+      req.session.cookie.expires= false;
+      res.render('index1Busca')
+    } else {
+      console.log('falhou')
+    }
+  });
 })
 
+
+
 app.get('/', (req, res) => {
-  res.render('index1Busca')
+  if(req.session.isAuthenticated){
+    res.render('index1Busca')
+  } else {
+    res.render('Auth')
+  }
 })
+
 
 app.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
+  sequelize.authenticate().then(()=>{
+    console.log('DataBase ON')
+  }).catch(err=>{
+    console.log('DataBase OFF')
+    console.log(err.message)
+  })
 });

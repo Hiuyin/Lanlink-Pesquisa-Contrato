@@ -4,15 +4,22 @@ if (process.env.NODE_ENV === undefined) {
 
 const production = {
     server: {
-        host: '',
-        port: '8080'
+        host: 'LLK85SH20113',
+        port: '1234'
     },
     database: {
         user: 'BuscaContrato',
         host: '10.85.1.19',
         pass: '!Q@W#E1q2w3e2018',
         name: 'DataSwitch',
-        dialect: 'mssql'
+        dialect: 'mssql',
+        table: 'documentoCRM'
+    },
+    active: {
+        url: 'ldap://for.lanlink.com.br',
+        basedn: 'dc=for,dc=lanlink,dc=com,dc=br',
+        user: 'FORTALEZA\\F1303901',
+        pass: 'gEG2IQ8bSO'
     }
 }
 
@@ -22,11 +29,21 @@ const development = {
         port: '3000'
     },
     database: {
-        user: 'BuscaContrato',
-        host: '10.85.1.19',
-        pass: '!Q@W#E1q2w3e2018',
+        user: 'busca',
+        host: '10.85.1.29',
+        pass: 'dev',
         name: 'DataSwitch',
-        dialect: 'mssql'
+        dialect: 'mssql',
+        table: 'dev_documentoCRM',
+        dialectOptions: {
+            instanceName: 'llk85sh20133',
+        }
+        },
+        active: {
+            url: 'ldap://for.lanlink.com.br',
+            basedn: 'dc=for,dc=lanlink,dc=com,dc=br',
+            user: 'FORTALEZA\\F1303901',
+            pass: 'gEG2IQ8bSO'
     }
 }
 

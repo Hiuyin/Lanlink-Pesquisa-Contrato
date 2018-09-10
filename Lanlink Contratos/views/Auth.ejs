@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,7 +7,7 @@
 	<meta name="viewport" content="width-device-width, initial-scale=1">
 	<title>Busca de Contratos</title>
 	<link rel="stylesheet" href="css/bootstrap.min.css">
-	<link rel="stylesheet" type="text/css" href="css/estilo1.css">
+	<link rel="stylesheet" type="text/css" href="css/login-page.css">
 	
 </head>
 <body>
@@ -33,21 +34,17 @@
  			<div class="col-md-3">
  				<h3></h3>
     		</div>
- 
-    		<div class="col-md-6">
-			<form action="http://10.85.50.152:3000/enviaPesquisa" method="GET">
-        		<div class="input-group h2">
-            			<input name="search" class="form-control" id="busca" type="text" placeholder="Digite o nome do contrato ou parte dele">
-            		<span class="input-group-btn">
-            			<a href="index2Contratos.html">
-                			<button class="btn btn-primary" type="submit">
-                    			<span class="glyphicon glyphicon-search"></span>
-                			</button>
-                		</a>
-           		    </span>
+			
+
+			<div class="login-page">
+				<div class="form">
+				   <form action="/loggin" method="post" class="login-form">
+					<input name="login" type="text" placeholder="Dominio\Usuário"/>
+					<input name="password" type="password" placeholder="Senha"/>
+					<button>Entrar</button>
+				  </form>
 				</div>
-			</form>
-   			 </div>
+			  </div>
  			<!--
    			 <div class="col-md-3">
         		<a href="add.html" class="btn btn-primary pull-right h2">Novo Item</a>
