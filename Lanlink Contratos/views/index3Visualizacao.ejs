@@ -22,12 +22,11 @@
 
 	
 
-
     <!-- Mensagem de exibição -->
 	<div id= "msgResult3">
 		<p>
 			<font size="5" face="arial">
-				<a href="/arquivos/<%= docs[0].idContrato%>"><b>Documentos do Contrato </b></a>
+				<a href="/arquivos/<%= idContrato%>"><b>Documentos do Contrato </b></a>
 			</font>
 		</p>
 	</div>
@@ -37,7 +36,11 @@
 
     <!-- Botão de voltar -->
 	<div id= "btnVoltar">
+		<%if( docs == 0) {%>
+			<a href="/">
+			<%} else {%>
 		<a href="/enviaPesquisa?search=<%= docs[0].contrato %>">
+			<%}%>
 			<u><b>Voltar para Contratos</b></u></p>
 		</a>
 	</div>
@@ -46,7 +49,7 @@
 
 	
 	<!--Botão de Download -->
-	<form action="/downloadContrato/<%= docs[0].idContrato %>">
+	<form action="/downloadContrato/<%= idContrato %>">
     <button  type="submit" class="btn btn-primary btn-xs" id= "btnDownload">Baixar todos documentos</button> 
 	</form>
 

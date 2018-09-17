@@ -13,7 +13,8 @@ const production = {
         pass: '!Q@W#E1q2w3e2018',
         name: 'DataSwitch',
         dialect: 'mssql',
-        table: 'documentoCRM'
+        tableDoc: 'documentoCRM',
+        tableContract: 'ContratosSapiens'
     },
     active: {
         url: 'ldap://for.lanlink.com.br',
@@ -34,7 +35,8 @@ const development = {
         pass: 'dev',
         name: 'DataSwitch',
         dialect: 'mssql',
-        table: 'dev_documentoCRM',
+        tableDoc: 'dev_documentoCRM',
+        tableContract: 'dev_contratos',
         dialectOptions: {
             instanceName: 'llk85sh20133',
         }

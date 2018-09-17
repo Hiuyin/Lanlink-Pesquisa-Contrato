@@ -26,9 +26,12 @@
   "devDependencies": {
     "nodemon": "^1.18.3"
   },
-  "pkg":{
-    "assets":["views/*.ejs","views/index1Busca.ejs","views/index2Contratos.ejs","views/index3Visualizacao.ejs"]
-      
+  "pkg": {
+    "assets": [
+      "views/*.ejs",
+      "views/index1Busca.ejs",
+      "views/index2Contratos.ejs",
+      "views/index3Visualizacao.ejs"
+    ]
   }
-
 }
