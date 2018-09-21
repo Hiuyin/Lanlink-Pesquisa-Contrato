@@ -36,7 +36,7 @@
 
     <!-- Botão de voltar -->
 	<div id= "btnVoltar">
-		<%if( docs == 0) {%>
+		<%if( valorNulo == 'ativo') {%>
 			<a href="/">
 			<%} else {%>
 		<a href="/enviaPesquisa?search=<%= docs[0].contrato %>">
@@ -76,6 +76,7 @@ Anexar documentos</button>
                  		</tr>
             		</thead>
             		<tbody>
+						<%if (valorNulo == 'inativo') {%>
 							<% if(docs.length !== 0) { %>
 								<% docs.forEach(function(item) { %>
                 		<tr>
@@ -98,6 +99,11 @@ Anexar documentos</button>
 									<td>Nenhum Documento Encontrato</td>
 								</tr>
 								<% } %>
+								<%} else {%>
+									<tr>
+											<td>Nenhum Documento Encontrato</td>
+										</tr>
+								<%}%>
             		</tbody>
         	    </table>
      	    </div>
