@@ -55,7 +55,7 @@ const env = {
 }
 
 if (!env[process.env.NODE_ENV]) {
-    throw new Error('Envirollment não foi definido!')
+    throw new Error('Environment não foi definido!')
 }
 
 module.exports = env[process.env.NODE_ENV]
